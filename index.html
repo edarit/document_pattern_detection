@@ -4,46 +4,63 @@
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width,initial-scale=1" />
     <title>Document Pattern Detection Lite Demo</title>
-
-    <link
-      rel="stylesheet"
-      href="https://cdn.jsdelivr.net/npm/@stlite/browser/build/style.css"
-    />
-
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@stlite/browser/build/style.css" />
+    <style>
+      html, body, #root { height: 100%; margin: 0; }
+    </style>
+  </head>
+  <body>
+    <div id="root"></div>
     <script type="module">
       import { mount } from "https://cdn.jsdelivr.net/npm/@stlite/browser/build/stlite.js";
 
-      mount(
-        {
-          requirements: [],
-          entrypoint: "app.py",
-          files: {
-            "app.py": `
+      const app = String.raw`
 import re
 import pandas as pd
 import streamlit as st
 
 st.set_page_config(page_title="Pattern Detection Lite Demo", page_icon="🔎", layout="wide")
 
-st.markdown("""
+st.markdown(
+    """
 <style>
 .block-container {padding-top: 1.2rem;}
 .hero {padding:1rem 1.2rem;border-radius:20px;background:linear-gradient(135deg,#111827 0%,#0f766e 100%);color:white;margin-bottom:1rem;}
 </style>
 <div class='hero'>
 <h1>🔎 Pattern Detection Lite Demo</h1>
-<p>Browser-only demo for exact terms + regex scanning on pasted text. Use full Streamlit Python app for real PDF highlighting/export.</p>
+<p>Browser-only demo for exact terms + regex scanning on pasted text.</p>
+<p>Use full Streamlit Python app for real PDF highlighting/export.</p>
 </div>
-""", unsafe_allow_html=True)
+""",
+    unsafe_allow_html=True,
+)
 
 with st.sidebar:
-    exact_terms = st.text_area("Exact terms", "25WPF12345\\nLim Ah Kau\\nB40")
-    regex_rules = st.text_area("Regex rules", "WPF Code::\\\\b\\\\d{2}WPF\\\\d{5}\\\\b\\nB40 Tag::\\\\bB40\\\\b")
+    exact_terms = st.text_area(
+        "Exact terms",
+        value="""25WPF12345
+Lim Ah Kau
+B40""",
+        height=140,
+    )
+    regex_rules = st.text_area(
+        "Regex rules",
+        value=r"""WPF Code::\b\d{2}WPF\d{5}\b
+B40 Tag::\bB40\b
+NRIC-ish::\b\d{6}-\d{2}-\d{4}\b""",
+        height=160,
+    )
 
-text = st.text_area("Paste document text here", height=260, value="Student 25WPF12345 named Lim Ah Kau is in B40 category.")
+text = st.text_area(
+    "Paste document text here",
+    height=260,
+    value="Student 25WPF12345 named Lim Ah Kau is in B40 category. Another value is 900101-10-1234.",
+)
 
 if st.button("Scan", type="primary"):
     hits = []
+
     for term in [x.strip() for x in exact_terms.splitlines() if x.strip()]:
         for m in re.finditer(re.escape(term), text, flags=re.I):
             hits.append({"label": f"Exact: {term}", "matched_text": m.group(0), "type": "exact"})
@@ -60,21 +77,26 @@ if st.button("Scan", type="primary"):
     st.metric("Total hits", len(df))
     if len(df):
         st.dataframe(df, use_container_width=True, hide_index=True)
-        st.download_button("Download CSV", df.to_csv(index=False).encode("utf-8"), "pattern_hits_demo.csv", "text/csv")
+        st.download_button(
+            "Download CSV",
+            df.to_csv(index=False).encode("utf-8"),
+            "pattern_hits_demo.csv",
+            "text/csv",
+        )
     else:
         st.info("No matches found.")
-`
-          }
+`;
+
+      mount(
+        {
+          requirements: ["pandas"],
+          entrypoint: "app.py",
+          files: {
+            "app.py": app,
+          },
         },
         document.getElementById("root")
       );
     </script>
-
-    <style>
-      html, body, #root { height: 100%; margin: 0; }
-    </style>
-  </head>
-  <body>
-    <div id="root"></div>
   </body>
 </html>
