@@ -4,13 +4,15 @@
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width,initial-scale=1" />
     <title>Document Pattern Detection Lite Demo</title>
-    <style>
-      html, body, #root { height: 100%; margin: 0; }
-    </style>
-  </head>
-  <body>
+
+    <link
+      rel="stylesheet"
+      href="https://cdn.jsdelivr.net/npm/@stlite/browser/build/style.css"
+    />
+
     <script type="module">
-      import { mount } from "https://cdn.jsdelivr.net/npm/@stlite/browser@0.85.0/build/stlite.js";
+      import { mount } from "https://cdn.jsdelivr.net/npm/@stlite/browser/build/stlite.js";
+
       mount(
         {
           requirements: [],
@@ -35,8 +37,8 @@ st.markdown("""
 """, unsafe_allow_html=True)
 
 with st.sidebar:
-    exact_terms = st.text_area("Exact terms", "25WPF12345\nLim Ah Kau\nB40")
-    regex_rules = st.text_area("Regex rules", "WPF Code::\\b\\d{2}WPF\\d{5}\\b\nB40 Tag::\\bB40\\b")
+    exact_terms = st.text_area("Exact terms", "25WPF12345\\nLim Ah Kau\\nB40")
+    regex_rules = st.text_area("Regex rules", "WPF Code::\\\\b\\\\d{2}WPF\\\\d{5}\\\\b\\nB40 Tag::\\\\bB40\\\\b")
 
 text = st.text_area("Paste document text here", height=260, value="Student 25WPF12345 named Lim Ah Kau is in B40 category.")
 
@@ -68,7 +70,11 @@ if st.button("Scan", type="primary"):
       );
     </script>
 
-
+    <style>
+      html, body, #root { height: 100%; margin: 0; }
+    </style>
+  </head>
+  <body>
     <div id="root"></div>
   </body>
 </html>
