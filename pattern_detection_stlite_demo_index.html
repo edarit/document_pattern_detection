@@ -1,0 +1,72 @@
+<!doctype html>
+<html>
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width,initial-scale=1" />
+    <title>Document Pattern Detection Lite Demo</title>
+    <script type="module">
+      import { mount } from "https://cdn.jsdelivr.net/npm/@stlite/browser@0.85.0/build/stlite.js";
+      mount(
+        {
+          requirements: [],
+          entrypoint: "app.py",
+          files: {
+            "app.py": `
+import re
+import pandas as pd
+import streamlit as st
+
+st.set_page_config(page_title="Pattern Detection Lite Demo", page_icon="🔎", layout="wide")
+
+st.markdown("""
+<style>
+.block-container {padding-top: 1.2rem;}
+.hero {padding:1rem 1.2rem;border-radius:20px;background:linear-gradient(135deg,#111827 0%,#0f766e 100%);color:white;margin-bottom:1rem;}
+</style>
+<div class='hero'>
+<h1>🔎 Pattern Detection Lite Demo</h1>
+<p>Browser-only demo for exact terms + regex scanning on pasted text. Use full Streamlit Python app for real PDF highlighting/export.</p>
+</div>
+""", unsafe_allow_html=True)
+
+with st.sidebar:
+    exact_terms = st.text_area("Exact terms", "25WPF12345\nLim Ah Kau\nB40")
+    regex_rules = st.text_area("Regex rules", "WPF Code::\\b\\d{2}WPF\\d{5}\\b\nB40 Tag::\\bB40\\b")
+
+text = st.text_area("Paste document text here", height=260, value="Student 25WPF12345 named Lim Ah Kau is in B40 category.")
+
+if st.button("Scan", type="primary"):
+    hits = []
+    for term in [x.strip() for x in exact_terms.splitlines() if x.strip()]:
+        for m in re.finditer(re.escape(term), text, flags=re.I):
+            hits.append({"label": f"Exact: {term}", "matched_text": m.group(0), "type": "exact"})
+
+    for line in [x.strip() for x in regex_rules.splitlines() if x.strip()]:
+        if "::" in line:
+            label, pattern = line.split("::", 1)
+        else:
+            label, pattern = f"Regex: {line}", line
+        for m in re.finditer(pattern, text, flags=re.I):
+            hits.append({"label": label.strip(), "matched_text": m.group(0), "type": "regex"})
+
+    df = pd.DataFrame(hits)
+    st.metric("Total hits", len(df))
+    if len(df):
+        st.dataframe(df, use_container_width=True, hide_index=True)
+        st.download_button("Download CSV", df.to_csv(index=False).encode("utf-8"), "pattern_hits_demo.csv", "text/csv")
+    else:
+        st.info("No matches found.")
+`
+          }
+        },
+        document.getElementById("root")
+      );
+    </script>
+    <style>
+      html, body, #root { height: 100%; margin: 0; }
+    </style>
+  </head>
+  <body>
+    <div id="root"></div>
+  </body>
+</html>
